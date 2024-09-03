@@ -1,6 +1,7 @@
+// src/firebase.js
 import { initializeApp } from 'firebase/app';
-// Importuj druge Firebase proizvode koji su ti potrebni
-import { getFirestore } from 'firebase/firestore'; // Ako koristiš Firestore
+import { getFirestore } from 'firebase/firestore';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth'; // Import Firebase Auth
 
 const firebaseConfig = {
   apiKey: "AIzaSyBxnHkXqx4pAwMZMkohaRAHsjXF2m-kEXk",
@@ -14,8 +15,7 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-
-// Ako koristiš Firestore, možeš ga inicijalizovati ovde
 const db = getFirestore(app);
+const auth = getAuth(app); // Initialize Firebase Auth
 
-export { app, db };
+export { app, db, auth, createUserWithEmailAndPassword, signInWithEmailAndPassword };

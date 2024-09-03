@@ -8,11 +8,14 @@
         <router-link to="/add-event" class="nav-item"
           >Add New Event</router-link
         >
+        <!-- Dodaj dugme za odjavu ovde -->
+        <button @click="logout" class="logout-button">Logout</button>
       </nav>
     </header>
 
     <section class="main-content">
       <div class="card-container">
+        <!-- Karte ostaju iste -->
         <div class="card">
           <h2>Upcoming Events</h2>
           <p>
@@ -48,6 +51,26 @@
   </div>
 </template>
 
+<script>
+import { auth } from "../firebase"; // Uvezi autentifikaciju iz Firebase
+
+export default {
+  name: "HomePage",
+  methods: {
+    logout() {
+      auth
+        .signOut()
+        .then(() => {
+          this.$router.push("/"); // Preusmeri korisnika na AuthPage
+        })
+        .catch((error) => {
+          console.error("Error signing out: ", error);
+        });
+    },
+  },
+};
+</script>
+
 <style scoped>
 .home-container {
   display: grid;
@@ -62,6 +85,7 @@
   color: white;
   padding: 20px;
   text-align: center;
+  position: relative; /* Dodano za postavljanje dugmeta za odjavu */
 }
 
 .header h1 {
@@ -92,6 +116,24 @@
 
 .nav-item:hover {
   background: #004494;
+}
+
+/* Stilovi za dugme za odjavu */
+.logout-button {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.logout-button:hover {
+  background: #c82333;
 }
 
 .main-content {
