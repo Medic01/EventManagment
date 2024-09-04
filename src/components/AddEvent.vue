@@ -31,6 +31,14 @@
       </div>
       <button type="submit" class="submit-button">Add Event</button>
     </form>
+
+    <!-- Success Modal -->
+    <div v-if="showModal" class="modal-overlay" @click="hideModal">
+      <div class="modal-content" @click.stop>
+        <p>Event added successfully!</p>
+        <button @click="hideModal">OK</button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -46,6 +54,7 @@ export default {
     const time = ref("");
     const location = ref("");
     const category = ref("");
+    const showModal = ref(false);
 
     const addEvent = async () => {
       try {
@@ -57,18 +66,31 @@ export default {
           location: location.value,
           category: category.value,
         });
+
+        // Clear form fields
         name.value = "";
         date.value = "";
         time.value = "";
         location.value = "";
         category.value = "";
-        alert("Event added successfully!");
+
+        // Show success modal
+        showModal.value = true;
+
+        // Optionally redirect to HomePage after a short delay
+        setTimeout(() => {
+          // You can use router.push("/home") here if you want to redirect after showing the modal
+        }, 1000); // Adjust delay as needed
       } catch (error) {
         console.error("Error adding event: ", error);
       }
     };
 
-    return { name, date, time, location, category, addEvent };
+    const hideModal = () => {
+      showModal.value = false;
+    };
+
+    return { name, date, time, location, category, showModal, addEvent, hideModal };
   },
 };
 </script>
@@ -120,6 +142,43 @@ select {
 }
 
 .submit-button:hover {
+  background-color: #0056b3;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content button {
+  margin-top: 15px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  background-color: #007bff;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.modal-content button:hover {
   background-color: #0056b3;
 }
 </style>

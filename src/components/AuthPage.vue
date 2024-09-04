@@ -4,11 +4,11 @@
     <header>
       <div class="header-content">
         <h1>Find anything you want</h1>
-        <p>Music, Art, Food & Drink, Hobbies, Nightlife</p>
+        <p>Music, Art, Food&Drink, Hobbies, Nightlife</p>
       </div>
     </header>
     <div class="background-overlay">
-      <h1>Dobrodošli u Event Manager</h1>
+      <h1>Welcome to Event Managment</h1>
       <div class="auth-options">
         <button @click="goToLogin">Login</button>
         <button @click="goToRegister">Register</button>
@@ -77,21 +77,13 @@ header:before {
 .auth-container {
   position: relative;
   height: calc(100vh - 80px); /* Adjust to account for header height */
-  background: url("https://i.natgeofe.com/n/78f154a9-4c13-47e4-b7c7-8c116334fbeb/33990_4x3.jpg") no-repeat center center fixed;
+  background: url("https://cdn.pixabay.com/photo/2019/04/20/01/32/chain-4140780_640.jpg") no-repeat center center fixed;
   background-size: cover;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #000; /* F
-.auth-container {
-  position: relative;
-  height: calc(100vh - 80px); /* Adjust to account for header height */
-  background: url("https://i.natgeofe.com/n/78f154a9-4c13-47e4-b7c7-8c116334fbeb/33990_4x3.jpg") no-repeat center center fixed;
-  background-size: cover;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #000; /* Fallback color in case the image doesn't load */
+  background-color: #000; 
+
 }
 
 .background-overlay {
