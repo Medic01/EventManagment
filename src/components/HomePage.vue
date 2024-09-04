@@ -5,71 +5,95 @@
       <p>Your ultimate event management tool</p>
       <nav class="nav-menu">
         <router-link to="/events" class="nav-item">View Events</router-link>
-        <router-link to="/add-event" class="nav-item"
-          >Add New Event</router-link
-        >
-        <!-- Dodaj dugme za odjavu ovde -->
+        <router-link to="/add-event" class="nav-item">Add New Event</router-link>
         <button @click="logout" class="logout-button">Logout</button>
       </nav>
+      <div class="user-info">
+        <p>{{ userName }} {{ userSurname }}</p>
+      </div>
     </header>
 
     <section class="main-content">
       <div class="card-container">
-        <!-- Karte ostaju iste -->
-        <div class="card">
-          <h2>Upcoming Events</h2>
-          <p>
-            See what's coming up next and never miss out on your favorite
-            events.
-          </p>
-          <router-link to="/events" class="card-link"
-            >Explore Events</router-link
-          >
-        </div>
-
-        <div class="card">
-          <h2>Event Planning</h2>
-          <p>
-            Plan and organize your own events with ease using our intuitive
-            tools.
-          </p>
-          <router-link to="/add-event" class="card-link"
-            >Start Planning</router-link
-          >
-        </div>
-
-        <div class="card">
-          <h2>Event Insights</h2>
-          <p>
-            Analyze and get insights on past events to make informed decisions
-            for future ones.
-          </p>
-          <router-link to="#" class="card-link">View Insights</router-link>
+        <div class="card" v-for="event in events" :key="event.id">
+          <h2>{{ event.name }}</h2>
+          <p>Date: {{ event.date }}</p>
+          <p>Time: {{ event.time }}</p>
+          <p>Location: {{ event.location }}</p>
+          <p>Category: {{ event.category }}</p>
         </div>
       </div>
     </section>
   </div>
 </template>
 
+
 <script>
-import { auth } from "../firebase"; // Uvezi autentifikaciju iz Firebase
+import { ref, onMounted } from "vue";
+import { db, auth } from "../firebase";
+import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import { useRouter } from "vue-router"; // Import useRouter
 
 export default {
   name: "HomePage",
-  methods: {
-    logout() {
+  setup() {
+    const events = ref([]);
+    const userName = ref("");
+    const userSurname = ref("");
+    const router = useRouter(); // Initialize router
+
+    const fetchEvents = async () => {
+      try {
+        const eventsCollection = collection(db, "events");
+        const eventSnapshot = await getDocs(eventsCollection);
+        events.value = eventSnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+      } catch (error) {
+        console.error("Error fetching events: ", error);
+      }
+    };
+
+    const fetchUserData = async () => {
+      try {
+        const user = auth.currentUser;
+        if (user) {
+          const userDoc = doc(db, "users", user.uid); // Assuming the user's data is stored in "users" collection with their UID as the document ID
+          const docSnap = await getDoc(userDoc);
+          if (docSnap.exists()) {
+            const userData = docSnap.data();
+            userName.value = userData.name;
+            userSurname.value = userData.surname;
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user data: ", error);
+      }
+    };
+
+    onMounted(() => {
+      fetchEvents();
+      fetchUserData();
+    });
+
+    const logout = () => {
       auth
         .signOut()
         .then(() => {
-          this.$router.push("/"); // Preusmeri korisnika na AuthPage
+          router.push("/"); // Use router to navigate to AuthPage
         })
         .catch((error) => {
           console.error("Error signing out: ", error);
         });
-    },
+    };
+
+    return { events, logout, userName, userSurname };
   },
 };
 </script>
+
+
 
 <style scoped>
 .home-container {
@@ -85,7 +109,7 @@ export default {
   color: white;
   padding: 20px;
   text-align: center;
-  position: relative; /* Dodano za postavljanje dugmeta za odjavu */
+  position: relative;
 }
 
 .header h1 {
@@ -118,7 +142,6 @@ export default {
   background: #004494;
 }
 
-/* Stilovi za dugme za odjavu */
 .logout-button {
   position: absolute;
   right: 20px;
@@ -134,6 +157,14 @@ export default {
 
 .logout-button:hover {
   background: #c82333;
+}
+
+.user-info {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  color: white;
+  font-size: 1rem;
 }
 
 .main-content {
@@ -165,17 +196,5 @@ export default {
 .card p {
   font-size: 1rem;
 }
-
-.card-link {
-  display: inline-block;
-  margin-top: 10px;
-  color: #007bff;
-  text-decoration: none;
-  font-weight: bold;
-  transition: color 0.3s;
-}
-
-.card-link:hover {
-  color: #0056b3;
-}
 </style>
+
