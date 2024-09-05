@@ -1,27 +1,31 @@
 <template>
   <div class="add-event-container">
     <h1>Add Event</h1>
-    <form @submit.prevent="addEvent">
+    <form @submit.prevent="addEvent" class="form">
       <div class="form-group">
         <label for="name">Event Name:</label>
-        <input type="text" v-model="name" id="name" required />
+        <input type="text" v-model="name" id="name" required placeholder="Enter event name" />
       </div>
+
       <div class="form-group">
         <label for="date">Event Date:</label>
         <input type="date" v-model="date" id="date" required />
       </div>
+
       <div class="form-group">
         <label for="time">Event Time:</label>
         <input type="time" v-model="time" id="time" required />
       </div>
+
       <div class="form-group">
         <label for="location">Location:</label>
-        <input type="text" v-model="location" id="location" required />
+        <input type="text" v-model="location" id="location" required placeholder="Enter location" />
       </div>
+
       <div class="form-group">
         <label for="category">Category:</label>
         <select v-model="category" id="category" required>
-          <option disabled value="">Please select one</option>
+          <option disabled value="">Please select a category</option>
           <option value="Music">Music</option>
           <option value="Nightlife">Nightlife</option>
           <option value="Art">Art</option>
@@ -29,10 +33,15 @@
           <option value="Food & Drink">Food & Drink</option>
         </select>
       </div>
+
+      <div class="form-group">
+        <label for="image">Event Image:</label>
+        <input type="file" @change="onFileChange" id="image" />
+      </div>
+
       <button type="submit" class="submit-button">Add Event</button>
     </form>
 
-    <!-- Success Modal -->
     <div v-if="showModal" class="modal-overlay" @click="hideModal">
       <div class="modal-content" @click.stop>
         <p>Event added successfully!</p>
@@ -44,8 +53,9 @@
 
 <script>
 import { ref } from "vue";
-import { db } from "../firebase";
+import { db, storage } from "../firebase"; // Make sure to import storage
 import { collection, addDoc } from "firebase/firestore";
+import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage"; // Firebase storage functions
 
 export default {
   setup() {
@@ -55,9 +65,24 @@ export default {
     const location = ref("");
     const category = ref("");
     const showModal = ref(false);
+    const imageFile = ref(null);
+
+    const onFileChange = (event) => {
+      imageFile.value = event.target.files[0]; // Save the selected image file
+    };
 
     const addEvent = async () => {
       try {
+        let imageUrl = null;
+
+        // If an image file was selected, upload it
+        if (imageFile.value) {
+          const storageReference = storageRef(storage, `events/${imageFile.value.name}`);
+          const snapshot = await uploadBytes(storageReference, imageFile.value);
+          imageUrl = await getDownloadURL(snapshot.ref); // Get the image URL after uploading
+        }
+
+        // Add event details to Firestore
         const eventsCollection = collection(db, "events");
         await addDoc(eventsCollection, {
           name: name.value,
@@ -65,6 +90,7 @@ export default {
           time: time.value,
           location: location.value,
           category: category.value,
+          imageUrl: imageUrl, // Store the image URL in the database
         });
 
         // Clear form fields
@@ -73,14 +99,10 @@ export default {
         time.value = "";
         location.value = "";
         category.value = "";
+        imageFile.value = null; // Clear the file input
 
         // Show success modal
         showModal.value = true;
-
-        // Optionally redirect to HomePage after a short delay
-        setTimeout(() => {
-          // You can use router.push("/home") here if you want to redirect after showing the modal
-        }, 1000); // Adjust delay as needed
       } catch (error) {
         console.error("Error adding event: ", error);
       }
@@ -90,7 +112,7 @@ export default {
       showModal.value = false;
     };
 
-    return { name, date, time, location, category, showModal, addEvent, hideModal };
+    return { name, date, time, location, category, showModal, addEvent, hideModal, onFileChange };
   },
 };
 </script>
@@ -99,83 +121,95 @@ export default {
 .add-event-container {
   max-width: 600px;
   margin: 0 auto;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  background-color: #ffffff;
+  padding: 2rem;
+  background-color: #f9f9f9;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
 }
 
 h1 {
   text-align: center;
-  margin-bottom: 20px;
+  font-size: 2rem;
+  color: #333;
+  margin-bottom: 1.5rem;
 }
 
 .form-group {
-  margin-bottom: 15px;
   display: flex;
   flex-direction: column;
+  margin-bottom: 1.2rem;
 }
 
-label {
-  margin-bottom: 5px;
-  font-weight: bold;
+.form-group label {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 0.4rem;
 }
 
-input,
-select {
-  padding: 10px;
-  border-radius: 5px;
+.form-group input, 
+.form-group select {
+  padding: 0.75rem;
+  font-size: 1rem;
   border: 1px solid #ccc;
-  font-size: 16px;
+  border-radius: 8px;
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus, 
+.form-group select:focus {
+  border-color: #007bff;
 }
 
 .submit-button {
-  margin-top: 20px;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
   background-color: #007bff;
   color: white;
-  font-size: 16px;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  width: 100%;
+  text-align: center;
 }
 
 .submit-button:hover {
   background-color: #0056b3;
 }
 
-/* Modal Styles */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
 }
 
 .modal-content {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
+  background-color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
   text-align: center;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content p {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
 }
 
 .modal-content button {
-  margin-top: 15px;
-  padding: 10px 15px;
-  border: none;
-  border-radius: 5px;
   background-color: #007bff;
   color: white;
-  font-size: 16px;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
 }
 
 .modal-content button:hover {
