@@ -2,11 +2,18 @@
   <div class="home-container">
     <header class="header">
       <div class="header-content">
-        <h1>Event Manager</h1>
+        <h1>Event Management</h1>
         <p>Your ultimate event management tool</p>
         <nav class="nav-menu">
           <router-link to="/events" class="nav-item">View Events</router-link>
-          <router-link to="/add-event" class="nav-item">Add New Event</router-link>
+          <!-- Button for adding new event, visible only for 'ADMIN' users -->
+          <router-link
+            v-if="userRole === 'ADMIN'"
+            to="/add-event"
+            class="nav-item"
+          >
+            Add New Event
+          </router-link>
           <button @click="logout" class="logout-button">Logout</button>
         </nav>
         <div class="user-info">
@@ -51,8 +58,6 @@
   </div>
 </template>
 
-
-
 <script>
 import { ref, onMounted, computed } from "vue";
 import { db, auth } from "../firebase";
@@ -65,6 +70,7 @@ export default {
     const events = ref([]);
     const userName = ref("");
     const userSurname = ref("");
+    const userRole = ref(""); // Variable to store user role
     const selectedCategory = ref(null);
     const categories = ["Music", "Art", "Nightlife", "Hobbies", "Food & Drink"];
     const categoryIcons = {
@@ -99,6 +105,7 @@ export default {
             const userData = docSnap.data();
             userName.value = userData.name;
             userSurname.value = userData.surname;
+            userRole.value = userData.role; // Store the user's role
           }
         }
       } catch (error) {
@@ -133,7 +140,18 @@ export default {
         });
     };
 
-    return { events, logout, userName, userSurname, categories, filterEvents, filteredEvents, selectedCategory, categoryIcons };
+    return {
+      events,
+      logout,
+      userName,
+      userSurname,
+      userRole, // Add userRole to the return object
+      categories,
+      filterEvents,
+      filteredEvents,
+      selectedCategory,
+      categoryIcons
+    };
   },
 };
 </script>
