@@ -1,20 +1,21 @@
 <template>
-  <div class="home-container">
+  <div :class="['home-container', { 'dark-theme': isDarkTheme }]">
     <header class="header">
       <div class="header-content">
         <h1>Event Management</h1>
         <p>Your ultimate event management tool</p>
         <nav class="nav-menu">
-          <router-link to="/events" class="nav-item">View Events</router-link>
+          <!-- Favorites button -->
+          <router-link to="/favorites" class="nav-item">Favourites</router-link>
+          
           <!-- Button for adding new event, visible only for 'ADMIN' users -->
-          <router-link
-            v-if="userRole === 'ADMIN'"
-            to="/add-event"
-            class="nav-item"
-          >
+          <router-link v-if="userRole === 'ADMIN'" to="/add-event" class="nav-item">
             Add New Event
           </router-link>
           <button @click="logout" class="logout-button">Logout</button>
+          <button @click="toggleDarkTheme" class="dark-mode-toggle">
+            {{ isDarkTheme ? 'Light Mode' : 'Dark Mode' }}
+          </button>
         </nav>
         <div class="user-info">
           <p>{{ userName }} {{ userSurname }}</p>
@@ -50,6 +51,12 @@
               <p>Time: {{ event.time }}</p>
               <p>Location: {{ event.location }}</p>
               <p>Category: {{ event.category }}</p>
+              
+              <!-- Button to add/remove event from favorites -->
+              <button @click="toggleFavorite(event)" class="favorite-button">
+  {{ isFavorite(event) ? '❤️ Remove from Favorites' : '🤍 Add to Favorites' }}
+</button>
+
             </div>
           </div>
         </div>
@@ -61,7 +68,7 @@
 <script>
 import { ref, onMounted, computed } from "vue";
 import { db, auth } from "../firebase";
-import { collection, getDocs, doc, getDoc } from "firebase/firestore";
+import { collection, getDocs, doc, getDoc, updateDoc } from "firebase/firestore";
 import { useRouter } from "vue-router";
 
 export default {
@@ -70,8 +77,10 @@ export default {
     const events = ref([]);
     const userName = ref("");
     const userSurname = ref("");
-    const userRole = ref(""); // Variable to store user role
+    const userRole = ref(""); 
     const selectedCategory = ref(null);
+    const favorites = ref([]);
+    const isDarkTheme = ref(false); // New reactive property for dark theme
     const categories = ["Music", "Art", "Nightlife", "Hobbies", "Food & Drink"];
     const categoryIcons = {
       Music: "fa fa-music",
@@ -105,7 +114,8 @@ export default {
             const userData = docSnap.data();
             userName.value = userData.name;
             userSurname.value = userData.surname;
-            userRole.value = userData.role; // Store the user's role
+            userRole.value = userData.role;
+            favorites.value = userData.favorites || []; // Load favorites from Firestore
           }
         }
       } catch (error) {
@@ -133,11 +143,38 @@ export default {
       auth
         .signOut()
         .then(() => {
-          router.push("/"); // Use router to navigate to AuthPage
+          router.push("/"); 
         })
         .catch((error) => {
           console.error("Error signing out: ", error);
         });
+    };
+
+    // Check if the event is in the user's favorites
+    const isFavorite = (event) => {
+      return favorites.value.includes(event.id);
+    };
+
+    // Toggle favorite status of an event
+    const toggleFavorite = async (event) => {
+      const user = auth.currentUser;
+      if (user) {
+        const userDoc = doc(db, "users", user.uid);
+        if (isFavorite(event)) {
+          // Remove from favorites
+          favorites.value = favorites.value.filter(fav => fav !== event.id);
+        } else {
+          // Add to favorites
+          favorites.value.push(event.id);
+        }
+        // Update user's favorites in Firestore
+        await updateDoc(userDoc, { favorites: favorites.value });
+      }
+    };
+
+    // Toggle dark theme
+    const toggleDarkTheme = () => {
+      isDarkTheme.value = !isDarkTheme.value;
     };
 
     return {
@@ -145,17 +182,20 @@ export default {
       logout,
       userName,
       userSurname,
-      userRole, // Add userRole to the return object
+      userRole, 
       categories,
       filterEvents,
       filteredEvents,
       selectedCategory,
-      categoryIcons
+      categoryIcons,
+      isFavorite,
+      toggleFavorite,
+      toggleDarkTheme,
+      isDarkTheme,
     };
   },
 };
 </script>
-
 
 <style scoped>
 .home-container {
@@ -165,6 +205,12 @@ export default {
   font-family: "Arial", sans-serif;
   color: #333;
   background: #f9f9f9;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.dark-theme {
+  background: #121212;
+  color: #e0e0e0;
 }
 
 .header {
@@ -214,7 +260,7 @@ export default {
 
 .logout-button {
   position: absolute;
-  right: 20px;
+  right: 120px;
   top: 20px;
   background: #dc3545;
   color: white;
@@ -227,6 +273,23 @@ export default {
 
 .logout-button:hover {
   background: #c82333;
+}
+
+.dark-mode-toggle {
+  position: absolute;
+  right: 20px;
+  top: 20px;
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.dark-mode-toggle:hover {
+  background: #0056b3;
 }
 
 .user-info {
@@ -252,7 +315,7 @@ export default {
 }
 
 .filter-menu .icon-container {
-  display: flex;
+  display   : flex;
   gap: 10px;
 }
 
@@ -327,6 +390,41 @@ export default {
   font-size: 1rem;
   margin: 5px 0;
 }
-</style>
 
+/* Dark mode styles */
+.dark-theme .card {
+  background: #1e1e1e;
+  border-color: #333;
+}
+
+.dark-theme .event-details {
+  color: #e0e0e0;
+}
+
+.dark-theme .nav-item,
+.dark-theme .logout-button,
+.dark-theme .dark-mode-toggle {
+  background: #444;
+  color: #fff;
+}
+
+.dark-theme .nav-item:hover,
+.dark-theme .logout-button:hover,
+.dark-theme .dark-mode-toggle:hover {
+  background: #555;
+}
+
+.favorite-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: transform 0.2s;
+}
+
+.favorite-button:hover {
+  transform: scale(1.1);
+}
+
+</style>
 

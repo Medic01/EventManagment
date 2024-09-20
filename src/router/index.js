@@ -1,4 +1,3 @@
-// src/router/index.js
 import { createRouter, createWebHistory } from 'vue-router';
 import { auth } from '../firebase'; // Importuj Firebase Authentication
 import HomePage from '../components/HomePage.vue';
@@ -7,6 +6,7 @@ import AddEvent from '../components/AddEvent.vue';
 import LoginUser from '../components/LoginUser.vue';
 import RegisterUser from '../components/RegisterUser.vue';
 import AuthPage from '../components/AuthPage.vue'; // Dodaj novu komponentu
+import EventFavourites from '../components/EventFavourites.vue'; // Importuj Favorites komponentu
 
 const routes = [
   { path: '/', component: AuthPage }, // Postavi AuthPage kao početnu stranicu
@@ -26,6 +26,11 @@ const routes = [
     path: '/add-event', 
     component: AddEvent,
     meta: { requiresAuth: true }  // Zaštićena ruta
+  },
+  { 
+    path: '/favorites', 
+    component: EventFavourites,  // Dodaj Favorites komponentu
+    meta: { requiresAuth: true }  // Zaštićena ruta za Favorites
   }
 ];
 
