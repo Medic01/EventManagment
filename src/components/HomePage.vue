@@ -1,14 +1,12 @@
 <template>
   <div :class="['home-container', { 'dark-theme': isDarkTheme }]">
+    <!-- Hero Section -->
     <header class="header">
       <div class="header-content">
-        <h1>Event Management</h1>
-        <p>Your ultimate event management tool</p>
+        <h1>Discover Your Next Event</h1>
+        <p>Explore music, art, nightlife, and more</p>
         <nav class="nav-menu">
-          <!-- Favorites button -->
           <router-link to="/favorites" class="nav-item">Favourites</router-link>
-          
-          <!-- Button for adding new event, visible only for 'ADMIN' users -->
           <router-link v-if="userRole === 'ADMIN'" to="/add-event" class="nav-item">
             Add New Event
           </router-link>
@@ -23,15 +21,12 @@
       </div>
     </header>
 
+    <!-- Main Content -->
     <section class="main-content">
       <div class="filter-menu">
         <div class="icon-container">
-          <button
-            v-for="cat in categories"
-            :key="cat"
-            @click="filterEvents(cat)"
-            :class="{'active': selectedCategory === cat}"
-          >
+          <button v-for="cat in categories" :key="cat" @click="filterEvents(cat)"
+            :class="{'active': selectedCategory === cat}">
             <i :class="categoryIcons[cat]" aria-hidden="true"></i>
             <span>{{ cat }}</span>
           </button>
@@ -41,6 +36,8 @@
           <span>All</span>
         </button>
       </div>
+
+      <!-- Event Cards -->
       <div class="card-container">
         <div class="card" v-for="event in filteredEvents" :key="event.id">
           <div class="event-content">
@@ -51,12 +48,9 @@
               <p>Time: {{ event.time }}</p>
               <p>Location: {{ event.location }}</p>
               <p>Category: {{ event.category }}</p>
-              
-              <!-- Button to add/remove event from favorites -->
               <button @click="toggleFavorite(event)" class="favorite-button">
-  {{ isFavorite(event) ? '❤️ Remove from Favorites' : '🤍 Add to Favorites' }}
-</button>
-
+                {{ isFavorite(event) ? '❤️ Remove from Favorites' : '🤍 Add to Favorites' }}
+              </button>
             </div>
           </div>
         </div>
@@ -206,11 +200,19 @@ export default {
   color: #333;
   background: #f9f9f9;
   transition: background-color 0.3s, color 0.3s;
+  background-image: url('https://static.vecteezy.com/system/resources/thumbnails/008/011/877/small_2x/event-management-creation-and-development-personal-and-corporate-events-photo.jpg'); /* Putanja do tvoje slike */
+  background-size: cover; /* Automatski prilagođava sliku prema veličini prozora */
+  background-position: center; /* Postavlja sliku u centar */
+  background-attachment: fixed; /* Pozadina ostaje fiksna prilikom skrolanja */
 }
 
 .dark-theme {
   background: #121212;
   color: #e0e0e0;
+  background-image: url('https://t3.ftcdn.net/jpg/07/91/15/44/360_F_791154427_3eKfohowxkPxtrlObabnwGPYOIV5UFQS.jpg'); /* Različita slika za tamni mod */
+  background-size: cover; /* Automatski prilagođava sliku prema veličini prozora */
+  background-position: center; /* Postavlja sliku u centar */
+  background-attachment: fixed; /* Pozadina ostaje fiksna prilikom skrolanja */
 }
 
 .header {
@@ -220,6 +222,10 @@ export default {
   text-align: center;
   position: relative;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  background-image: url('https://static.showit.co/800/IocATTxEQ0WVuAJOQYUpgQ/119341/the_finer_things_event_planning_wedding_event_design_coordination_parties_party_designer_ohio_destination_jennifer_kontomerkos2.jpg'); /* Putanja do tvoje slike */
+  background-size: cover; /* Automatski prilagođava sliku veličini headera */
+  background-position: center; /* Postavlja sliku u centar headera */
+  background-repeat: no-repeat; /* Sprečava ponavljanje slike */
 }
 
 .header-content {
@@ -424,6 +430,44 @@ export default {
 
 .favorite-button:hover {
   transform: scale(1.1);
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #fff; /* Boja teksta */
+  text-shadow: 
+    0 0 5px #fff,     /* Unutrašnji svetleći efekat */
+    0 0 10px #00b3ff, /* Spoljni plavi sjaj */
+    0 0 20px #00b3ff, 
+    0 0 30px #00b3ff, 
+    0 0 40px #00b3ff, 
+    0 0 50px #00b3ff, 
+    0 0 60px #00b3ff; /* Dublji svetleći efekat */
+}
+
+:root {
+  --light-mode-color: #333; /* Tamna boja za light mode */
+  --dark-mode-color: #fff;  /* Svetla boja za dark mode */
+}
+
+body.light-mode {
+  --button-text-color: var(--light-mode-color);
+}
+
+body.dark-mode {
+  --button-text-color: var(--dark-mode-color);
+}
+
+.favorite-button {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--button-text-color); /* Dinamička boja teksta */
+  background-color: transparent;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  transition: color 0.3s ease;
 }
 
 </style>

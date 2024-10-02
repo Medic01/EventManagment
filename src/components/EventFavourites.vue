@@ -181,5 +181,35 @@
       padding: 0.6rem 1rem;
     }
   }
+
+  .favorites-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  border: none;
+  /* background-image removed */
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh; /* Obezbeđuje da telo zauzme ceo prozor */
+  background-image: url('https://static.wixstatic.com/media/11062b_cc01f7bc690847b18ac5054b9bf1d4bc~mv2.jpg/v1/fill/w_640,h_776,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/11062b_cc01f7bc690847b18ac5054b9bf1d4bc~mv2.jpg');
+  background-size: cover; /* Slika će pokriti celu pozadinu */
+  background-position: center; /* Slika će biti centrirana */
+  background-repeat: no-repeat; /* Sprečava ponavljanje slike */
+  background-attachment: fixed; /* Pozadina ostaje fiksirana tokom skrolovanja */
+}
+
+.favorites-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  border: none;
+  min-height: 80vh; /* Obezbeđuje da kontejner zauzima barem 80% visine ekrana */
+  background-color: rgba(255, 255, 255, 0.8); /* Poluprovidna bela pozadina unutar kontejnera za bolju čitljivost teksta */
+  border-radius: 15px; /* Zaobljeni uglovi */
+}
+
   </style>
   
