@@ -9,7 +9,7 @@
 
       <div class="form-group">
         <label for="date">Event Date:</label>
-        <input type="date" v-model="date" id="date" required />
+        <input type="date" v-model="date" :min="today" id="date" required />
       </div>
 
       <div class="form-group">
@@ -53,9 +53,9 @@
 
 <script>
 import { ref } from "vue";
-import { db, storage } from "../firebase"; // Make sure to import storage
+import { db, storage } from "../firebase";
 import { collection, addDoc } from "firebase/firestore";
-import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage"; // Firebase storage functions
+import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage";
 
 export default {
   setup() {
@@ -67,11 +67,20 @@ export default {
     const showModal = ref(false);
     const imageFile = ref(null);
 
+    // Get today's date in YYYY-MM-DD format for min attribute on date input
+    const today = ref(new Date().toISOString().split("T")[0]);
+
     const onFileChange = (event) => {
-      imageFile.value = event.target.files[0]; // Save the selected image file
+      imageFile.value = event.target.files[0];
     };
 
     const addEvent = async () => {
+      // Check if all fields are filled
+      if (!name.value || !date.value || !time.value || !location.value || !category.value) {
+        alert("Please fill out all fields before submitting.");
+        return;
+      }
+
       try {
         let imageUrl = null;
 
@@ -79,7 +88,7 @@ export default {
         if (imageFile.value) {
           const storageReference = storageRef(storage, `events/${imageFile.value.name}`);
           const snapshot = await uploadBytes(storageReference, imageFile.value);
-          imageUrl = await getDownloadURL(snapshot.ref); // Get the image URL after uploading
+          imageUrl = await getDownloadURL(snapshot.ref);
         }
 
         // Add event details to Firestore
@@ -90,7 +99,7 @@ export default {
           time: time.value,
           location: location.value,
           category: category.value,
-          imageUrl: imageUrl, // Store the image URL in the database
+          imageUrl: imageUrl,
         });
 
         // Clear form fields
@@ -99,7 +108,7 @@ export default {
         time.value = "";
         location.value = "";
         category.value = "";
-        imageFile.value = null; // Clear the file input
+        imageFile.value = null;
 
         // Show success modal
         showModal.value = true;
@@ -112,7 +121,18 @@ export default {
       showModal.value = false;
     };
 
-    return { name, date, time, location, category, showModal, addEvent, hideModal, onFileChange };
+    return {
+      name,
+      date,
+      time,
+      location,
+      category,
+      showModal,
+      addEvent,
+      hideModal,
+      onFileChange,
+      today,
+    };
   },
 };
 </script>
